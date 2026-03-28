@@ -608,7 +608,8 @@ let apiKey       = '';
 // API KEY MANAGEMENT
 // ═══════════════════════════════════════════════
 function loadApiKey() {
-  apiKey = localStorage.getItem('feedro_apikey') || '';
+  apiKey = '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';
+  localStorage.setItem('feedro_apikey', apiKey);
   updateApiDot();
 }
 
@@ -1041,9 +1042,7 @@ function handleAdd(tab) {
 loadApiKey();
 
 // Daca nu are key, arata modalul dupa 1s
-if (!apiKey) {
-  setTimeout(() => document.getElementById('api-modal').classList.add('visible'), 800);
-}
+// API key hardcodat -- modal dezactivat
 
 loadAllTabs();
 
