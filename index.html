@@ -1054,27 +1054,10 @@ function handleAdd(tab) {
 
 
 // ═══════════════════════════════════════════════
-// BACKGROUND IMAGES
+// BACKGROUND IMAGE
 // ═══════════════════════════════════════════════
-const BG_IMAGES = [
-  'images/13D3B444-171F-4328-9781-E63EDB94C5F6.jpg',
-  'images/7680B59F-A43D-4A37-882A-B4DF7BF3EF81.jpg',
-  'images/D1069293-46DC-4713-AB90-42933BAB41E0.JPEG',
-  'images/IMG_7845.JPEG',
-  'images/IMG_7851.JPEG',
-  'images/IMG_7863.JPEG',
-  'images/IMG_7871.JPEG',
-  'images/IMG_7896.JPEG',
-  'images/IMG_7916.JPEG',
-  'images/IMG_7923.JPEG',
-  'images/IMG_7927.JPEG',
-  'images/IMG_7934.JPEG',
-  'images/IMG_7938.JPEG',
-];
-
 function setRandomBackground() {
-  const img = BG_IMAGES[Math.floor(Math.random() * BG_IMAGES.length)];
-  document.body.style.backgroundImage = `linear-gradient(rgba(20,20,30,0.78), rgba(20,20,30,0.78)), url('${img}')`;
+  document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.75), rgba(15,20,30,0.75)), url('images/IMG_9801.JPEG')";
   document.body.style.backgroundSize = 'cover';
   document.body.style.backgroundPosition = 'center';
   document.body.style.backgroundAttachment = 'fixed';
