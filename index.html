@@ -283,7 +283,7 @@
   }
 
   .card {
-    background: rgba(20,28,42,0.70);
+    background: var(--surface);
     border: 1px solid #4a5468;
     border-radius: 6px;
     padding: 1.2rem;
@@ -515,6 +515,93 @@
   .btn-add:hover { background: var(--accent2); }
   .settings-note { font-size: 0.75rem; color: var(--text-dim); font-style: italic; padding: 0.8rem 1.2rem; border-top: 1px solid var(--border); }
 
+
+  /* ── SEARCH BAR ── */
+  .search-bar {
+    background: rgba(30,36,48,0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 2rem;
+    position: sticky;
+    top: 152px;
+    z-index: 97;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .search-bar.hidden { display: none; }
+
+  .search-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.45rem 0.9rem;
+    color: var(--text);
+    font-size: 0.82rem;
+    font-family: 'Source Serif 4', serif;
+    outline: none;
+    transition: border-color 0.2s;
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-dim); }
+
+  .search-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .search-clear {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 3px;
+    transition: all 0.15s;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  .search-clear:hover { color: var(--ro); }
+
+  .search-count {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Card priority highlight */
+  .card.priority {
+    border-left: 3px solid var(--accent);
+    order: -1;
+  }
+
+  .priority-badge {
+    font-size: 0.6rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  .cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .cards-grid-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
 </style>
 </head>
 <body>
@@ -581,6 +668,14 @@
   <div class="tab" data-tab="settings" onclick="switchTab('settings')" style="margin-left:auto;border-left:1px solid var(--border)">
     <span class="tab-dot" style="background:var(--text-dim)"></span> Setari
   </div>
+</div>
+
+<!-- ── SEARCH BAR ── -->
+<div class="search-bar hidden" id="search-bar">
+  <span class="search-label" id="search-label">Prioritizeaza:</span>
+  <input class="search-input" id="search-input" type="text" placeholder="ex: Raiffeisen, NATO, AI..." oninput="onSearchInput()"/>
+  <button class="search-clear" onclick="clearSearch()">✕ Sterge</button>
+  <span class="search-count" id="search-count"></span>
 </div>
 
 <main>
@@ -836,6 +931,9 @@ function renderTab(tab) {
 
   // Declanseaza rezumatele AI in background
   summarizeTab(tab);
+
+  // Aplica filtrarea dupa render
+  applySearch(tab);
 }
 
 function setLoading(tab) {
@@ -901,6 +999,7 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   if (tab === 'settings') renderSettingsPanel();
+  updateSearchBar(tab);
 }
 
 function refreshAll() {
@@ -1056,24 +1155,101 @@ function handleAdd(tab) {
 // ═══════════════════════════════════════════════
 // BACKGROUND IMAGE
 // ═══════════════════════════════════════════════
-function setRandomBackground() {
-  const img = new Image();
-  img.onload = function() {
-    document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.45), rgba(15,20,30,0.45)), url('images/IMG_9801.jpg')";
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    document.body.style.backgroundRepeat = 'no-repeat';
-  };
-  img.onerror = function() {
-    // Try JPEG extension
-    document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.45), rgba(15,20,30,0.45)), url('images/IMG_9801.JPEG')";
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    document.body.style.backgroundRepeat = 'no-repeat';
-  };
-  img.src = 'images/IMG_9801.jpg';
+function setRandomBackground() { /* no background image */ }
+
+
+// ═══════════════════════════════════════════════
+// SEARCH / PRIORITIZE
+// ═══════════════════════════════════════════════
+let tabKeywords = JSON.parse(localStorage.getItem('feedro_keywords') || '{}');
+
+function getKeywords(tab) {
+  return (tabKeywords[tab] || '').toLowerCase().trim();
+}
+
+function saveKeywords(tab, val) {
+  tabKeywords[tab] = val;
+  localStorage.setItem('feedro_keywords', JSON.stringify(tabKeywords));
+}
+
+function onSearchInput() {
+  const val = document.getElementById('search-input').value;
+  const tab = document.querySelector('.tab.active').dataset.tab;
+  if (tab === 'settings') return;
+  saveKeywords(tab, val);
+  applySearch(tab);
+}
+
+function clearSearch() {
+  const tab = document.querySelector('.tab.active').dataset.tab;
+  document.getElementById('search-input').value = '';
+  saveKeywords(tab, '');
+  applySearch(tab);
+}
+
+function updateSearchBar(tab) {
+  const bar = document.getElementById('search-bar');
+  const input = document.getElementById('search-input');
+  const label = document.getElementById('search-label');
+  const TAB_NAMES = { ro: 'Romania', int: 'International', food: 'Food & Meat', ai: 'AI & Tech' };
+
+  if (tab === 'settings') {
+    bar.classList.add('hidden');
+    return;
+  }
+
+  bar.classList.remove('hidden');
+  label.textContent = `Prioritizeaza in ${TAB_NAMES[tab] || tab}:`;
+  input.value = tabKeywords[tab] || '';
+  applySearch(tab);
+}
+
+function applySearch(tab) {
+  const kw = getKeywords(tab);
+  const container = document.getElementById(`tab-${tab}`);
+  if (!container) return;
+
+  const cards = container.querySelectorAll('.card');
+  let matchCount = 0;
+
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    const terms = kw.split(/[,\s]+/).filter(t => t.length > 1);
+    const matches = terms.length > 0 && terms.some(t => text.includes(t));
+
+    // Remove existing priority badge
+    const existingBadge = card.querySelector('.priority-badge');
+    if (existingBadge) existingBadge.remove();
+
+    if (matches) {
+      card.classList.add('priority');
+      const badge = document.createElement('div');
+      badge.className = 'priority-badge';
+      badge.textContent = '★ Relevant';
+      card.prepend(badge);
+      matchCount++;
+    } else {
+      card.classList.remove('priority');
+    }
+  });
+
+  // Sort: priority cards first within each source section
+  container.querySelectorAll('.cards-grid').forEach(grid => {
+    const priorityCards = [...grid.querySelectorAll('.card.priority')];
+    const normalCards = [...grid.querySelectorAll('.card:not(.priority)')];
+    priorityCards.forEach(c => grid.appendChild(c));
+    normalCards.forEach(c => grid.appendChild(c));
+    // Re-sort: priority first
+    priorityCards.forEach(c => grid.prepend(c));
+  });
+
+  const countEl = document.getElementById('search-count');
+  const terms2 = kw.split(/[,\s]+/).filter(t => t.length > 1);
+  if (kw && terms2.length > 0 && matchCount > 0) {
+    countEl.textContent = `${matchCount} stiri relevante`;
+  } else {
+    countEl.textContent = '';
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1081,6 +1257,7 @@ function setRandomBackground() {
 // ═══════════════════════════════════════════════
 loadApiKey();
 setRandomBackground();
+updateSearchBar('ro');
 
 // Daca nu are key, arata modalul dupa 1s
 // API key hardcodat -- modal dezactivat
