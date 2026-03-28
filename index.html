@@ -648,7 +648,7 @@ async function summarizeItem(item) {
   if (summaryCache[item.link]) return summaryCache[item.link];
 
   const snippet = cleanSnippet(item.description).slice(0, 400);
-  const prompt  = `Rezuma in maxim 2 fraze scurte, in romana, urmatoarea stire. Fii concis si factual. Nu incepe cu "Stirea prezinta" sau similar.\n\nTitlu: ${item.title}\n\nText: ${snippet}`;
+  const prompt  = `Rezuma in 3-4 fraze clare, in romana, urmatoarea stire. Fii informativ si factual -- include cele mai importante detalii. Nu incepe cu "Stirea prezinta" sau similar.\n\nTitlu: ${item.title}\n\nText: ${snippet}`;
 
   try {
     const res = await fetch(ANTHROPIC_URL, {
@@ -661,7 +661,7 @@ async function summarizeItem(item) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 150,
+        max_tokens: 250,
         messages: [{ role: 'user', content: prompt }]
       })
     });
