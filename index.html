@@ -33,6 +33,20 @@
     line-height: 1.6;
   }
 
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 18, 0.82);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  header, .tabs-wrapper, main, #api-modal, #status-bar {
+    position: relative;
+    z-index: 1;
+  }
+
   /* ── MODAL API KEY ── */
   #api-modal {
     display: none;
@@ -890,6 +904,7 @@ function switchTab(tab) {
 }
 
 function refreshAll() {
+  setRandomBackground();
   // Pastreaza cache-ul de rezumate -- nu re-rezuma stirile deja procesate
   allItems = { ro:[], int:[], food:[], ai:[] };
   loadAllTabs();
@@ -1036,10 +1051,66 @@ function handleAdd(tab) {
   document.getElementById(`url-${tab}`).value = '';
 }
 
+
+// ═══════════════════════════════════════════════
+// BACKGROUND IMAGE ROTATOR
+// ═══════════════════════════════════════════════
+const BG_IMAGES = [
+  '13D3B444-171F-4328-9781-E63EDB94C5F6.jpg',
+  '1D4AFBAE-C693-4F3D-ACA5-0117E3B0BFD1.JPG',
+  '7680B59F-A43D-4A37-882A-B4DF7BF3EF81.jpg',
+  'D1069293-46DC-4713-AB90-42933BAB41E0.JPG',
+  'IMG_7845.JPEG',
+  'IMG_7851.JPEG',
+  'IMG_7863.JPEG',
+];
+
+function setRandomBackground() {
+  const img = BG_IMAGES[Math.floor(Math.random() * BG_IMAGES.length)];
+  const url = '/' + img;
+  document.body.style.backgroundImage = `url('${url}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundAttachment = 'fixed';
+  document.body.style.backgroundRepeat = 'no-repeat';
+}
+
+setRandomBackground();
+
+
+// ═══════════════════════════════════════════════
+// BACKGROUND IMAGES
+// ═══════════════════════════════════════════════
+const BG_IMAGES = [
+  'images/13D3B444-171F-4328-9781-E63EDB94C5F6.jpg',
+  'images/7680B59F-A43D-4A37-882A-B4DF7BF3EF81.jpg',
+  'images/D1069293-46DC-4713-AB90-42933BAB41E0.JPEG',
+  'images/IMG_7845.JPEG',
+  'images/IMG_7851.JPEG',
+  'images/IMG_7863.JPEG',
+  'images/IMG_7871.JPEG',
+  'images/IMG_7896.JPEG',
+  'images/IMG_7916.JPEG',
+  'images/IMG_7923.JPEG',
+  'images/IMG_7927.JPEG',
+  'images/IMG_7934.JPEG',
+  'images/IMG_7938.JPEG',
+];
+
+function setRandomBackground() {
+  const img = BG_IMAGES[Math.floor(Math.random() * BG_IMAGES.length)];
+  document.body.style.backgroundImage = `linear-gradient(rgba(20,20,30,0.78), rgba(20,20,30,0.78)), url('${img}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundAttachment = 'fixed';
+  document.body.style.backgroundRepeat = 'no-repeat';
+}
+
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 loadApiKey();
+setRandomBackground();
 
 // Daca nu are key, arata modalul dupa 1s
 // API key hardcodat -- modal dezactivat
