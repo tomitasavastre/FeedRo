@@ -433,6 +433,73 @@
     .tab { padding: 0.9rem 0.9rem; font-size: 0.72rem; }
     .header-meta { display: none; }
   }
+
+  /* ── SETTINGS TAB ── */
+  .settings-panel {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .settings-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .settings-section-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .settings-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .tag { font-size: 0.62rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tag-ro   { background: rgba(232,82,58,0.15);  color: var(--ro); }
+  .tag-int  { background: rgba(74,159,232,0.15); color: var(--int); }
+  .tag-food { background: rgba(106,191,106,0.15);color: var(--food); }
+  .tag-ai   { background: rgba(176,106,232,0.15);color: var(--ai); }
+  .source-list { list-style: none; }
+  .source-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+  }
+  .source-item:last-child { border-bottom: none; }
+  .source-item-name { font-size: 0.85rem; font-weight: 600; color: var(--text); min-width: 140px; }
+  .source-item-url { font-size: 0.72rem; color: var(--text-dim); font-family: monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .source-item-badge { font-size: 0.6rem; color: var(--text-dim); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+  .source-item-badge.custom { color: var(--accent); border-color: rgba(232,200,74,0.3); }
+  .btn-delete { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 3px; transition: all 0.15s; flex-shrink: 0; }
+  .btn-delete:hover { color: var(--ro); background: rgba(232,82,58,0.1); }
+  .btn-delete.disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+  .add-source-form {
+    padding: 1.2rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr auto auto;
+    gap: 0.6rem;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+  }
+  .form-input { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem 0.75rem; color: var(--text); font-size: 0.8rem; font-family: 'Source Serif 4', serif; outline: none; transition: border-color 0.2s; width: 100%; }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-select { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem 0.75rem; color: var(--text); font-size: 0.8rem; font-family: 'Source Serif 4', serif; outline: none; cursor: pointer; }
+  .btn-add { background: var(--accent); color: #0f0f0f; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 700; font-family: 'Source Serif 4', serif; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .btn-add:hover { background: var(--accent2); }
+  .settings-note { font-size: 0.75rem; color: var(--text-dim); font-style: italic; padding: 0.8rem 1.2rem; border-top: 1px solid var(--border); }
+
 </style>
 </head>
 <body>
@@ -499,6 +566,7 @@
   <div id="tab-int"  class="tab-content"></div>
   <div id="tab-food" class="tab-content"></div>
   <div id="tab-ai"   class="tab-content"></div>
+  <div id="tab-settings" class="tab-content"><div class="settings-panel" id="settings-panel"></div></div>
 </main>
 
 <div id="status-bar"></div>
@@ -511,29 +579,7 @@ const PROXY = 'https://api.rss2json.com/v1/api.json?api_key=drli6zyiivlhwvyjonvv
 const MAX_PER_SOURCE = 8;
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 
-const SOURCES = {
-  ro: [
-    { name: 'Hotnews',    url: 'https://www.hotnews.ro/rss' },
-    { name: 'Biziday',    url: 'https://www.biziday.ro/feed/' },
-    { name: 'Spotmedia',  url: 'https://spotmedia.ro/rss' },
-    { name: 'G4Media',    url: 'https://www.g4media.ro/feed' },
-    { name: 'Profit.ro',  url: 'https://www.profit.ro/rss' },
-  ],
-  int: [
-    { name: 'New York Times',      url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml' },
-    { name: 'Wall Street Journal', url: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml' },
-    { name: 'BBC World',           url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
-    { name: 'Reuters',             url: 'https://feeds.reuters.com/reuters/topNews' },
-    { name: 'The Guardian',        url: 'https://www.theguardian.com/world/rss' },
-  ],
-  ai_dedicated: [
-    { name: 'MIT Tech Review',  url: 'https://www.technologyreview.com/feed/' },
-    { name: 'VentureBeat AI',   url: 'https://venturebeat.com/category/ai/feed/' },
-    { name: 'TechCrunch AI',    url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-    { name: 'Ars Technica',     url: 'https://feeds.arstechnica.com/arstechnica/technology-lab' },
-    { name: 'The Neuron',       url: 'https://www.theneurondaily.com/feed' },
-  ],
-};
+// SOURCES are now managed dynamically via DEFAULT_SOURCES + custom localStorage
 
 const FOOD_KEYWORDS = ['carne','porc','vită','pui','vita','miel','mezel','procesare','abator',
   'aliment','food','meat','pork','beef','chicken','poultry','sausage','processing',
@@ -795,12 +841,18 @@ async function loadTab(tab) {
     });
   };
 
-  if (tab === 'ro')   await fetchAndAdd(SOURCES.ro);
-  if (tab === 'int')  await fetchAndAdd(SOURCES.int);
-  if (tab === 'food') await fetchAndAdd([...SOURCES.ro,...SOURCES.int], i => matchesKeywords(i, FOOD_KEYWORDS));
+  if (tab === 'ro')   await fetchAndAdd(getAllSourcesForTab('ro'));
+  if (tab === 'int')  await fetchAndAdd(getAllSourcesForTab('int'));
+  if (tab === 'food') {
+    const allSrc = [...getAllSourcesForTab('ro'), ...getAllSourcesForTab('int')];
+    const foodDedicated = getAllSourcesForTab('food');
+    await fetchAndAdd(foodDedicated);
+    await fetchAndAdd(allSrc, i => matchesKeywords(i, FOOD_KEYWORDS));
+  }
   if (tab === 'ai') {
-    await fetchAndAdd(SOURCES.ai_dedicated);
-    await fetchAndAdd([...SOURCES.ro,...SOURCES.int], i => matchesKeywords(i, AI_KEYWORDS));
+    await fetchAndAdd(getAllSourcesForTab('ai'));
+    const allSrc = [...getAllSourcesForTab('ro'), ...getAllSourcesForTab('int')];
+    await fetchAndAdd(allSrc, i => matchesKeywords(i, AI_KEYWORDS));
   }
 
   allItems[tab] = results;
@@ -825,12 +877,14 @@ function switchTab(tab) {
   document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'settings') renderSettingsPanel();
 }
 
 function refreshAll() {
   // Pastreaza cache-ul de rezumate -- nu re-rezuma stirile deja procesate
   allItems = { ro:[], int:[], food:[], ai:[] };
   loadAllTabs();
+renderSettingsPanel();
 }
 
 // ═══════════════════════════════════════════════
@@ -842,6 +896,135 @@ function showStatus(msg) {
   bar.style.display = 'block';
   clearTimeout(bar._t);
   bar._t = setTimeout(() => bar.style.display = 'none', 3000);
+}
+
+
+// ═══════════════════════════════════════════════
+// SETTINGS / RSS MANAGER
+// ═══════════════════════════════════════════════
+
+const DEFAULT_SOURCES = {
+  ro: [
+    { name: 'Hotnews',   url: 'https://www.hotnews.ro/rss' },
+    { name: 'Biziday',   url: 'https://www.biziday.ro/feed/' },
+    { name: 'Spotmedia', url: 'https://spotmedia.ro/rss' },
+    { name: 'G4Media',   url: 'https://www.g4media.ro/feed' },
+    { name: 'Profit.ro', url: 'https://www.profit.ro/rss' },
+  ],
+  int: [
+    { name: 'New York Times',      url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml' },
+    { name: 'Wall Street Journal', url: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml' },
+    { name: 'BBC World',           url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
+    { name: 'Reuters',             url: 'https://feeds.reuters.com/reuters/topNews' },
+    { name: 'The Guardian',        url: 'https://www.theguardian.com/world/rss' },
+  ],
+  ai: [
+    { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/feed/' },
+    { name: 'VentureBeat AI',  url: 'https://venturebeat.com/category/ai/feed/' },
+    { name: 'TechCrunch AI',   url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
+    { name: 'Ars Technica',    url: 'https://feeds.arstechnica.com/arstechnica/technology-lab' },
+    { name: 'The Neuron',      url: 'https://www.theneurondaily.com/feed' },
+  ],
+  food: [],
+};
+
+const TAB_LABELS = { ro: 'Romania', int: 'International', ai: 'AI & Tech', food: 'Food & Meat' };
+const TAB_CLASSES = { ro: 'tag-ro', int: 'tag-int', ai: 'tag-ai', food: 'tag-food' };
+
+function loadCustomSources() {
+  try { return JSON.parse(localStorage.getItem('feedro_custom_sources') || '{}'); } catch { return {}; }
+}
+
+function saveCustomSources(custom) {
+  localStorage.setItem('feedro_custom_sources', JSON.stringify(custom));
+}
+
+function getMergedSources(tab) {
+  const custom = loadCustomSources();
+  const base = DEFAULT_SOURCES[tab] || [];
+  const extra = custom[tab] || [];
+  return { base, extra };
+}
+
+function getAllSourcesForTab(tab) {
+  const { base, extra } = getMergedSources(tab);
+  return [...base, ...extra];
+}
+
+function addCustomSource(tab, name, url) {
+  const custom = loadCustomSources();
+  if (!custom[tab]) custom[tab] = [];
+  custom[tab].push({ name, url });
+  saveCustomSources(custom);
+  renderSettingsPanel();
+  showStatus(`Sursa "${name}" adaugata. Da Refresh pentru a incarca stirile.`);
+}
+
+function deleteCustomSource(tab, idx) {
+  const custom = loadCustomSources();
+  if (!custom[tab]) return;
+  custom[tab].splice(idx, 1);
+  saveCustomSources(custom);
+  renderSettingsPanel();
+  showStatus('Sursa stearsa.');
+}
+
+function renderSettingsPanel() {
+  const panel = document.getElementById('settings-panel');
+  if (!panel) return;
+
+  const tabs = ['ro', 'int', 'ai', 'food'];
+  const custom = loadCustomSources();
+
+  panel.innerHTML = tabs.map(tab => {
+    const { base, extra } = getMergedSources(tab);
+    const totalCount = base.length + extra.length;
+
+    const baseRows = base.map(s => `
+      <li class="source-item">
+        <span class="source-item-name">${s.name}</span>
+        <span class="source-item-url">${s.url}</span>
+        <span class="source-item-badge builtin">implicit</span>
+        <button class="btn-delete disabled" title="Sursele implicite nu pot fi sterse">✕</button>
+      </li>`).join('');
+
+    const extraRows = extra.map((s, i) => `
+      <li class="source-item">
+        <span class="source-item-name">${s.name}</span>
+        <span class="source-item-url">${s.url}</span>
+        <span class="source-item-badge custom">custom</span>
+        <button class="btn-delete" title="Sterge sursa" onclick="deleteCustomSource('${tab}', ${i})">✕</button>
+      </li>`).join('');
+
+    return `
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <span class="settings-section-title">${TAB_LABELS[tab]}</span>
+          <span class="tag ${TAB_CLASSES[tab]}">${totalCount} surse</span>
+        </div>
+        <ul class="source-list">
+          ${baseRows}
+          ${extraRows}
+        </ul>
+        <div class="add-source-form">
+          <input class="form-input" id="name-${tab}" placeholder="Nume sursa" type="text"/>
+          <input class="form-input" id="url-${tab}"  placeholder="https://site.com/rss" type="url"/>
+          <select class="form-select" id="tab-${tab}-sel" style="display:none"></select>
+          <button class="btn-add" onclick="handleAdd('${tab}')">+ Adauga</button>
+        </div>
+        <div class="settings-note">Sursele implicite nu pot fi sterse. Sursele custom sunt salvate local in browser.</div>
+      </div>`;
+  }).join('');
+}
+
+function handleAdd(tab) {
+  const name = document.getElementById(`name-${tab}`).value.trim();
+  const url  = document.getElementById(`url-${tab}`).value.trim();
+  if (!name) { showStatus('Introdu un nume pentru sursa.'); return; }
+  if (!url.startsWith('http')) { showStatus('URL-ul trebuie sa inceapa cu https://'); return; }
+  addCustomSource(tab, name, url);
+  document.getElementById(`name-${tab}`).value = '';
+  document.getElementById(`url-${tab}`).value = '';
 }
 
 // ═══════════════════════════════════════════════
