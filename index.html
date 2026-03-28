@@ -647,7 +647,7 @@ async function summarizeItem(item) {
   if (!apiKey) return null;
   if (summaryCache[item.link]) return summaryCache[item.link];
 
-  const snippet = cleanSnippet(item.description).slice(0, 400);
+  const snippet = cleanSnippet(item.description).slice(0, 800);
   const prompt  = `Rezuma in 3-4 fraze clare, in romana, urmatoarea stire. Fii informativ si factual -- include cele mai importante detalii. Nu incepe cu "Stirea prezinta" sau similar.\n\nTitlu: ${item.title}\n\nText: ${snippet}`;
 
   try {
