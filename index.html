@@ -522,6 +522,16 @@ const SOURCES = {
   int: [
     { name: 'New York Times',      url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml' },
     { name: 'Wall Street Journal', url: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml' },
+    { name: 'BBC World',           url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
+    { name: 'Reuters',             url: 'https://feeds.reuters.com/reuters/topNews' },
+    { name: 'The Guardian',        url: 'https://www.theguardian.com/world/rss' },
+  ],
+  ai_dedicated: [
+    { name: 'MIT Tech Review',  url: 'https://www.technologyreview.com/feed/' },
+    { name: 'VentureBeat AI',   url: 'https://venturebeat.com/category/ai/feed/' },
+    { name: 'TechCrunch AI',    url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
+    { name: 'Ars Technica',     url: 'https://feeds.arstechnica.com/arstechnica/technology-lab' },
+    { name: 'The Neuron',       url: 'https://www.theneurondaily.com/feed' },
   ],
 };
 
@@ -788,7 +798,10 @@ async function loadTab(tab) {
   if (tab === 'ro')   await fetchAndAdd(SOURCES.ro);
   if (tab === 'int')  await fetchAndAdd(SOURCES.int);
   if (tab === 'food') await fetchAndAdd([...SOURCES.ro,...SOURCES.int], i => matchesKeywords(i, FOOD_KEYWORDS));
-  if (tab === 'ai')   await fetchAndAdd([...SOURCES.ro,...SOURCES.int], i => matchesKeywords(i, AI_KEYWORDS));
+  if (tab === 'ai') {
+    await fetchAndAdd(SOURCES.ai_dedicated);
+    await fetchAndAdd([...SOURCES.ro,...SOURCES.int], i => matchesKeywords(i, AI_KEYWORDS));
+  }
 
   allItems[tab] = results;
   document.getElementById(`count-${tab}`).textContent = results.length || '0';
