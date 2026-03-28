@@ -145,7 +145,7 @@
     height: 64px;
     position: sticky;
     top: 0;
-    background: rgba(28,32,44,0.98);
+    background: rgba(22,26,38,0.92);
     backdrop-filter: blur(12px);
     z-index: 100;
     gap: 1rem;
@@ -205,7 +205,7 @@
     display: flex;
     overflow-x: auto;
     scrollbar-width: none;
-    background: #1e2430;
+    background: rgba(30,36,48,0.92);
     position: sticky;
     top: 104px;
     z-index: 99;
@@ -283,7 +283,7 @@
   }
 
   .card {
-    background: var(--surface);
+    background: rgba(20,28,42,0.70);
     border: 1px solid #4a5468;
     border-radius: 6px;
     padding: 1.2rem;
@@ -1057,11 +1057,23 @@ function handleAdd(tab) {
 // BACKGROUND IMAGE
 // ═══════════════════════════════════════════════
 function setRandomBackground() {
-  document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.75), rgba(15,20,30,0.75)), url('images/IMG_9801.jpg')";
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center';
-  document.body.style.backgroundAttachment = 'fixed';
-  document.body.style.backgroundRepeat = 'no-repeat';
+  const img = new Image();
+  img.onload = function() {
+    document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.45), rgba(15,20,30,0.45)), url('images/IMG_9801.jpg')";
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  };
+  img.onerror = function() {
+    // Try JPEG extension
+    document.body.style.backgroundImage = "linear-gradient(rgba(15,20,30,0.45), rgba(15,20,30,0.45)), url('images/IMG_9801.JPEG')";
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+  };
+  img.src = 'images/IMG_9801.jpg';
 }
 
 // ═══════════════════════════════════════════════
